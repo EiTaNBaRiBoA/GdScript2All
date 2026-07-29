@@ -14,8 +14,12 @@ func _generate_scripts_pressed():
 	logs.text = ''
 	
 	# get all paths
-	var script_paths : Array = (script_itemlist.folders + script_itemlist.files) \
-	  .map(func(path): return path.replace("res://", "./") )
+	var script_paths : Array = (script_itemlist.folders + script_itemlist.files)
+	
+	if script_paths.is_empty():
+		script_paths.append('.')
+	
+	script_paths = script_paths.map(func(path): return path.replace("res://", "./") )
 	
 	var transpiler_name := get_transpiler_name()
 	
@@ -28,11 +32,14 @@ func _generate_scripts_pressed():
 		'-o', output_path
 		] )
 	
+	print(command)
+	
 	if EditorInterface.get_editor_settings().get_setting(gdscript2all_plugin.display_command):
 		logs.text += 'command : %s\n\n' % [ ' '.join(command) ]
 	
 	var output := []
-	OS.execute("python", command, output, true, false)
+	var res = OS.execute("py", command, output, true, false)
+	if res == -1: res = OS.execute("py", command, output, true, false)
 		
 	logs.text += ''.join( output.map( \
 		func(s): return s.replace('[91m', '[b]').replace('[0m', '[/b]')\

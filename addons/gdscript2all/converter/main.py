@@ -6,7 +6,7 @@ def main():
 	
 	import argparse
 	commandLineArgs = argparse.ArgumentParser(description='GDscript transpiler')
-	commandLineArgs.add_argument('input', nargs = '*', help='path to GDscript code (folder or file)', default = ['./tests'])
+	commandLineArgs.add_argument('input', nargs = '*', help='path to GDscript code (folder or file)', default = ['../../../tests'])
 	commandLineArgs.add_argument('-o', '--output', nargs = '?', default = './results', help='where to output transpiled code ')
 	commandLineArgs.add_argument('-t', '--transpiler', nargs = '?', default = 'CSharp', help='which transpiler script to use')
 	commandLineArgs.add_argument('-v', '--verbose', action='store_true', default = False, help='print additional execution logs' )
@@ -69,6 +69,11 @@ def main():
 	failed = False
 	if not args.no_type_resolving:
 		for i, filename in enumerate(input_files):
+
+			if not os.path.exists(filename):
+				print(f'could not resolve filepath {filename}')
+				continue
+
 			try:
 				with open(filename,'r+') as f: text = f.read()
 				parser = Parser.Parser(to_script_name(filename), text, TypeResolver(), lambda a,*b:None )
@@ -90,8 +95,9 @@ def main():
 		#generate_project(args.output, project_name, script_classes.keys())
 
 	for i, filename in enumerate(input_files):
-		try:
-			
+		if not os.path.exists(filename): continue
+
+		try:	
 			filedir = os.path.dirname(filename)
 			outname = (filename.replace(filedir, args.output) if filedir else os.path.join(args.output, filename) ).replace('.gd', '')
 			os.makedirs(os.path.dirname(outname), exist_ok=True)
